@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  prometheus:
+    image: "prom/prometheus:latest"
+    expose:
+      - "9090"
+    volumes:
+      - "./prometheus/config:/etc/prometheus"
+    restart: always
+
+  grafana:
+    image: "grafana/grafana"
+    ports:
+      - "3000:3000"
+
+  netrics:
+    build: '.'
+    image: 'zekro/netrics:latest'
+    expose:
+      - '9091'
+    restart: always
+    command: -addr :9091 -endpoint /metrics -sc 3 -interval 30m
