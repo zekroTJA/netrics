@@ -45,22 +45,22 @@ func main() {
 
 	prometheus.MustRegister(
 		prometheus.NewGaugeFunc(prometheus.GaugeOpts{
-			Name: "average_rtt",
+			Name: "netrics_average_rtt",
 			Help: "Average server RTT in milliseconds.",
 		}, w.RTTHandler),
 
 		prometheus.NewGaugeFunc(prometheus.GaugeOpts{
-			Name: "average_download_speed",
+			Name: "netrics_average_download_speed",
 			Help: "Average server downlaod speed in MBit/s.",
-		}, w.RTTHandler),
+		}, w.DLSpeedHandler),
 
 		prometheus.NewGaugeFunc(prometheus.GaugeOpts{
-			Name: "average_upload_speed",
+			Name: "netrics_average_upload_speed",
 			Help: "Average server upload speed in MBit/s.",
-		}, w.RTTHandler),
+		}, w.ULSpeedHandler),
 
 		prometheus.NewCounterFunc(prometheus.CounterOpts{
-			Name: "error_count_total",
+			Name: "netrics_error_count_total",
 			Help: "Total error count.",
 		}, w.ErrorCountHandler),
 	)
