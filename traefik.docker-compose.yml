@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.2"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--entrypoints.http.address=:80"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: always
+
+  portainer:
+    image: "portainer/portainer:latest"
+    expose:
+      - "9000"
+    volumes:
+      - "./portainer:/data"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.entrypoints=http"
+      - "traefik.http.routers.portainer.rule=PathPrefix(`/portainer`)"
+      - "traefik.http.routers.portainer.middlewares=portainer-redirect,portainer-stripprefix"
+      - "traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/portainer"
+      - "traefik.http.middlewares.portainer-redirect.redirectregex.regex=/portainer$$"
+      - "traefik.http.middlewares.portainer-redirect.redirectregex.replacement=/portainer/"
+      - "traefik.http.middlewares.portainer-redirect.redirectregex.permanent=true"
+    restart: always
+
+  prometheus:
+    image: "prom/prometheus:latest"
+    expose:
+      - "9090"
+    volumes:
+      - "./prometheus/config:/etc/prometheus"
+    restart: always
+
+  grafana:
+    image: "grafana/grafana"
+    expose:
+      - "3000"
+    volumes:
+      - "./grafana/config:/etc/grafana"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.entrypoints=http"
+      - "traefik.http.routers.grafana.rule=PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.middlewares=grafana-redirect,grafana-stripprefix"
+      - "traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.regex=/grafana$$"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.replacement=/grafana/"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.permanent=true"
+    restart: always
+
+  netrics:
+    build: "."
+    image: "zekro/netrics:latest"
+    expose:
+      - "9091"
+    restart: always
+    command: "-addr :9091 -endpoint /metrics -sc 3 -interval 30m"
