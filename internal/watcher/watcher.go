@@ -101,15 +101,16 @@ func (w *Watcher) onErrorWrapper(err error, v interface{}) {
 	}
 }
 
+func (w *Watcher) watchJob() {
+	if err := w.FetchValuesBlocking(); err != nil {
+		w.onErrorWrapper(err, nil)
+	}
+}
+
 func (w *Watcher) watchWorker() {
-	var err error
 	for {
+		go w.watchJob()
 		<-w.ticker.C
-		go func() {
-			if err = w.FetchValuesBlocking(); err != nil {
-				w.onErrorWrapper(err, nil)
-			}
-		}()
 	}
 }
 
